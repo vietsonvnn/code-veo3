@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Environment variables
+.env
+.env.local
+
+# Sensitive data
+config/cookies.json
+cookies_raw.json
+Flow_cookie.txt
+
+# Data directories
+data/videos/*.mp4
+data/videos/*.avi
+data/scripts/*.json
+data/logs/*.log
+data/logs/*.json
+
+# Gradio
+flagged/
+gradio_cached_examples/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Playwright
+.playwright/
+playwright/.cache/
+
+# Keep directory structure
+!data/videos/.gitkeep
+!data/scripts/.gitkeep
+!data/logs/.gitkeep
