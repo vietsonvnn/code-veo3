@@ -1,0 +1,30 @@
+[
+  {
+    "name": "__Secure-next-auth.session-token",
+    "value": "YOUR_SESSION_TOKEN_HERE",
+    "domain": ".google.com",
+    "path": "/",
+    "secure": true,
+    "httpOnly": true,
+    "sameSite": "Lax",
+    "expirationDate": 1732492800
+  },
+  {
+    "name": "__Secure-next-auth.csrf-token",
+    "value": "YOUR_CSRF_TOKEN_HERE",
+    "domain": ".google.com",
+    "path": "/",
+    "secure": true,
+    "httpOnly": true,
+    "sameSite": "Lax"
+  },
+  {
+    "name": "EMAIL",
+    "value": "your-email@gmail.com",
+    "domain": ".google.com",
+    "path": "/",
+    "secure": false,
+    "httpOnly": false,
+    "sameSite": "Lax"
+  }
+]

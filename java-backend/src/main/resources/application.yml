@@ -1,0 +1,66 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: veo2-backend
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+# VEO2 Configuration
+veo2:
+  flow:
+    url: https://labs.google/fx/vi/tools/flow
+    project-id: 7527ed36-b1fb-4728-9cac-e42fc01698c4  # Default project
+    timeout: 300000  # 5 minutes in milliseconds
+    retry-attempts: 3
+    retry-delay: 5000  # 5 seconds
+
+  video:
+    default-duration: 60
+    scene-duration: 8
+    aspect-ratio: "16:9"
+    quality: "1080p"
+    format: mp4
+    max-scenes: 15
+
+  gemini:
+    api-url: https://generativelanguage.googleapis.com/v1beta/models
+    model: gemini-2.0-flash-exp
+    temperature: 0.7
+    max-tokens: 8192
+    api-key: ${GEMINI_API_KEY:your-gemini-api-key-here}
+
+  veo:
+    api-url: https://aisandbox-pa.googleapis.com/v1
+    bearer-token: ${VEO_BEARER_TOKEN:your-veo-bearer-token-here}
+
+  browser:
+    headless: false
+    viewport-width: 1920
+    viewport-height: 1080
+    download-dir: ./data/videos
+
+  storage:
+    base-dir: ./data
+    scripts-dir: ./data/scripts
+    videos-dir: ./data/videos
+    logs-dir: ./data/logs
+    cookies-file: ./cookie.txt
+
+  supported-ratios: "16:9,9:16,1:1"
+
+logging:
+  level:
+    com.veo2: DEBUG
+    org.springframework: INFO
+    org.seleniumhq: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+  file:
+    name: ./data/logs/application.log

@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VEO2 Video Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1d2e;
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            background: #0f1118;
+            padding: 15px 30px;
+            display: flex;
+            gap: 15px;
+            border-bottom: 1px solid #2a2d3a;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: #8b92a7;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 14px;
+            border-radius: 6px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-btn.active {
+            background: #0ea5e9;
+            color: white;
+        }
+
+        .nav-btn:hover:not(.active) {
+            background: #252838;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Views */
+        .view {
+            display: none;
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        /* Settings View */
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            max-width: 1000px;
+        }
+
+        .setting-card {
+            background: #252838;
+            border-radius: 10px;
+            padding: 25px;
+            border: 1px solid #2a2d3a;
+        }
+
+        .setting-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #0ea5e9;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #9ca3af;
+            font-weight: 500;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 10px 12px;
+            background: #1a1d2e;
+            border: 1px solid #2a2d3a;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: #0ea5e9;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #0ea5e9;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0284c7;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .status-error {
+            background: #ef4444;
+            color: white;
+        }
+
+        /* Create Prompt View */
+        .prompt-container {
+            max-width: 900px;
+        }
+
+        .prompt-card {
+            background: #252838;
+            border-radius: 10px;
+            padding: 30px;
+            border: 1px solid #2a2d3a;
+        }
+
+        .prompt-textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            background: #1a1d2e;
+            border: 1px solid #2a2d3a;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .duration-slider {
+            width: 100%;
+        }
+
+        .slider-value {
+            display: inline-block;
+            background: #0ea5e9;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+
+        /* Storyboard View */
+        .storyboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #2a2d3a;
+        }
+
+        .storyboard-title {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .storyboard-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .scene-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .scene-card {
+            background: #252838;
+            border-radius: 10px;
+            padding: 25px;
+            display: grid;
+            grid-template-columns: 60% 40%;
+            gap: 25px;
+            border: 1px solid #2a2d3a;
+            transition: all 0.3s;
+        }
+
+        .scene-card:hover {
+            border-color: #0ea5e9;
+        }
+
+        .scene-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .scene-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .scene-badge {
+            background: #0ea5e9;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+        }
+
+        .prompt-display {
+            background: #1a1d2e;
+            border: 1px solid #2a2d3a;
+            border-radius: 5px;
+            padding: 15px;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #d1d5db;
+            min-height: 120px;
+            margin-bottom: 15px;
+        }
+
+        .scene-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-generate {
+            background: #a855f7;
+            color: white;
+        }
+
+        .btn-generate:hover {
+            background: #9333ea;
+        }
+
+        .btn-download {
+            background: #10b981;
+            color: white;
+        }
+
+        .video-preview {
+            background: #1a1d2e;
+            border-radius: 8px;
+            overflow: hidden;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #2a2d3a;
+        }
+
+        .video-preview video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .video-placeholder {
+            color: #6b7280;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .video-status {
+            margin-top: 10px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .progress-bar-container {
+            background: #1a1d2e;
+            border-radius: 5px;
+            height: 8px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            background: linear-gradient(90deg, #0ea5e9, #a855f7);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .spinner {
+            border: 3px solid #2a2d3a;
+            border-top: 3px solid #0ea5e9;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-text {
+            color: #9ca3af;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation -->
+    <div class="top-nav">
+        <button class="nav-btn" onclick="switchView('settings', event)">⚙️ Cài đặt</button>
+        <button class="nav-btn active" onclick="switchView('prompt', event)">📝 Tạo Prompt</button>
+        <button class="nav-btn" onclick="switchView('storyboard', event)">🎬 Phân cảnh</button>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container">
+
+            <!-- Settings View -->
+            <div class="view" id="view-settings">
+                <h1 style="margin-bottom: 30px;">Cài đặt hệ thống</h1>
+
+                <div class="settings-grid">
+                    <!-- API Configuration -->
+                    <div class="setting-card">
+                        <div class="setting-title">🔑 API Configuration</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Gemini API Key</label>
+                            <input type="text" id="apiKey" class="form-input" placeholder="AIzaSy...">
+                            <div class="info-text">API key để tạo script với Gemini AI</div>
+                        </div>
+
+                        <button class="btn btn-primary" onclick="saveApiConfig()">💾 Lưu cấu hình</button>
+                        <span id="api-status" class="status-indicator status-success" style="margin-left: 10px; display: none;">Đã lưu</span>
+                    </div>
+
+                    <!-- Cookie Configuration -->
+                    <div class="setting-card">
+                        <div class="setting-title">🍪 Cookie Configuration</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Cookie File Path</label>
+                            <input type="text" id="cookiePath" class="form-input" value="./cookie.txt" readonly>
+                            <div class="info-text">File cookie để browser automation</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Cookie Status</label>
+                            <div>
+                                <span id="cookie-status" class="status-indicator status-error">Chưa kiểm tra</span>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-secondary" onclick="checkCookies()">🔍 Kiểm tra Cookie</button>
+                    </div>
+
+                    <!-- Download Settings -->
+                    <div class="setting-card">
+                        <div class="setting-title">📁 Thư mục Tải xuống</div>
+
+                        <div class="form-group">
+                            <label class="form-label">Video Output Directory</label>
+                            <input type="text" id="downloadPath" class="form-input" value="./data/videos" readonly>
+                            <div class="info-text">Thư mục lưu video đã tạo</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Script Output Directory</label>
+                            <input type="text" id="scriptPath" class="form-input" value="./data/scripts" readonly>
+                            <div class="info-text">Thư mục lưu script JSON</div>
+                        </div>
+
+                        <button class="btn btn-secondary" onclick="openDownloadFolder()">📂 Mở thư mục</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Create Prompt View -->
+            <div class="view active" id="view-prompt">
+                <h1 style="margin-bottom: 30px;">Tạo Script Video</h1>
+
+                <div class="prompt-container">
+                    <div class="prompt-card">
+                        <div class="form-group">
+                            <label class="form-label">Nội dung Prompt</label>
+                            <textarea id="promptContent" class="prompt-textarea" placeholder="Nhập nội dung bạn muốn tạo video...&#10;VD: Một video về vịnh Hạ Long với cảnh đẹp thiên nhiên, di sản thế giới, phong cảnh kỳ vĩ...">Test video về biển Nha Trang</textarea>
+                            <div class="info-text">Mô tả chi tiết nội dung video bạn muốn tạo</div>
+                        </div>
+
+                        <div class="grid-2">
+                            <div class="form-group">
+                                <label class="form-label">Thời lượng video (giây)</label>
+                                <input type="range" id="videoDuration" class="duration-slider" min="15" max="120" value="30" step="15" oninput="updateDurationDisplay()">
+                                <span class="slider-value" id="durationValue">30s</span>
+                                <div class="info-text">Tổng thời lượng video muốn tạo</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">Tỷ lệ khung hình</label>
+                                <select id="promptRatio" class="form-select">
+                                    <option value="16:9">16:9 (Ngang)</option>
+                                    <option value="9:16">9:16 (Dọc)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Phong cách Video</label>
+                            <select id="videoStyle" class="form-select">
+                                <option value="cinematic">Cinematic - Điện ảnh</option>
+                                <option value="documentary">Documentary - Phim tài liệu</option>
+                            </select>
+                        </div>
+
+                        <div style="margin-top: 30px; display: flex; gap: 15px;">
+                            <button class="btn btn-success" onclick="generateScript()" style="flex: 1; padding: 15px; font-size: 16px;">
+                                ✨ Tạo Script
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearPrompt()">
+                                🗑️ Xóa
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="promptStatus" style="margin-top: 20px; text-align: center; display: none;">
+                        <div class="spinner"></div>
+                        <p style="color: #9ca3af; margin-top: 10px;">Đang tạo script...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Storyboard View -->
+            <div class="view" id="view-storyboard">
+                <div class="storyboard-header">
+                    <h1 class="storyboard-title" id="storyboardTitle">Storyboard (0 phân cảnh)</h1>
+                    <div class="storyboard-actions">
+                        <button class="btn btn-secondary" onclick="loadStoryboard()">🔄 Refresh</button>
+                        <button class="btn btn-success" onclick="generateAllVideos()">🎬 Tạo tất cả Video</button>
+                        <button class="btn btn-primary" onclick="downloadAllVideos()">⬇️ Tải tất cả</button>
+                    </div>
+                </div>
+
+                <div id="sceneList" class="scene-list">
+                    <div class="empty-state">
+                        <div class="spinner"></div>
+                        <h3>Đang tải...</h3>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api';
+        let currentScript = null;
+        let scenes = [];
+
+        // View switching
+        function switchView(viewName, event) {
+            // Remove active from all nav buttons
+            document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+
+            // Add active to clicked button
+            if (event && event.target) {
+                event.target.classList.add('active');
+            } else {
+                // If called programmatically, find and activate the right button
+                const buttons = document.querySelectorAll('.nav-btn');
+                buttons.forEach(btn => {
+                    if (btn.textContent.includes('Cài đặt') && viewName === 'settings') btn.classList.add('active');
+                    if (btn.textContent.includes('Tạo Prompt') && viewName === 'prompt') btn.classList.add('active');
+                    if (btn.textContent.includes('Phân cảnh') && viewName === 'storyboard') btn.classList.add('active');
+                });
+            }
+
+            // Switch views
+            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+            document.getElementById(`view-${viewName}`).classList.add('active');
+
+            // Load data for specific views
+            if (viewName === 'storyboard') {
+                loadStoryboard();
+            } else if (viewName === 'settings') {
+                loadSettings();
+            }
+        }
+
+        // Settings functions
+        async function loadSettings() {
+            try {
+                const response = await fetch(`${API_BASE}/config`);
+                if (response.ok) {
+                    const config = await response.json();
+                    document.getElementById('apiKey').value = config.geminiApiKey || '';
+                    checkCookies();
+                }
+            } catch (error) {
+                console.error('Error loading settings:', error);
+            }
+        }
+
+        async function saveApiConfig() {
+            const apiKey = document.getElementById('apiKey').value;
+            if (!apiKey) {
+                alert('Vui lòng nhập API key');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/config/api-key`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ apiKey: apiKey })
+                });
+
+                if (response.ok) {
+                    const statusEl = document.getElementById('api-status');
+                    statusEl.style.display = 'inline-block';
+                    alert('✅ Đã lưu API key thành công');
+                    setTimeout(() => {
+                        statusEl.style.display = 'none';
+                    }, 2000);
+                } else {
+                    alert('❌ Lỗi lưu API key');
+                }
+            } catch (error) {
+                alert('❌ Lỗi: ' + error.message);
+            }
+        }
+
+        async function checkCookies() {
+            try {
+                const response = await fetch(`${API_BASE}/config`);
+                if (response.ok) {
+                    const config = await response.json();
+                    const statusEl = document.getElementById('cookie-status');
+                    if (config.cookiesValid) {
+                        statusEl.className = 'status-indicator status-success';
+                        statusEl.textContent = 'Cookie hợp lệ';
+                    } else {
+                        statusEl.className = 'status-indicator status-error';
+                        statusEl.textContent = 'Cookie không hợp lệ';
+                    }
+                }
+            } catch (error) {
+                document.getElementById('cookie-status').textContent = 'Lỗi kiểm tra';
+            }
+        }
+
+        function openDownloadFolder() {
+            alert('Mở thư mục: ./data/videos');
+        }
+
+        function saveVideoSettings() {
+            alert('Đã lưu cài đặt video');
+        }
+
+        // Prompt functions
+        function updateDurationDisplay() {
+            const value = document.getElementById('videoDuration').value;
+            document.getElementById('durationValue').textContent = value + 's';
+        }
+
+        async function generateScript() {
+            const content = document.getElementById('promptContent').value.trim();
+            const duration = parseInt(document.getElementById('videoDuration').value);
+            const aspectRatio = document.getElementById('promptRatio').value;
+            const style = document.getElementById('videoStyle').value;
+
+            if (!content) {
+                alert('Vui lòng nhập nội dung prompt');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('promptStatus').style.display = 'block';
+
+            try {
+                const response = await fetch(`${API_BASE}/script/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic: content,
+                        duration: duration,
+                        aspectRatio: aspectRatio,
+                        style: style
+                    })
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const script = await response.json();
+                currentScript = script;
+                scenes = script.scenes || [];
+
+                document.getElementById('promptStatus').style.display = 'none';
+
+                // Switch to storyboard view
+                switchView('storyboard');
+                renderStoryboard();
+
+                alert(`✅ Script đã tạo thành công!\n${scenes.length} phân cảnh`);
+            } catch (error) {
+                document.getElementById('promptStatus').style.display = 'none';
+                alert('Lỗi tạo script: ' + error.message);
+            }
+        }
+
+        function clearPrompt() {
+            document.getElementById('promptContent').value = '';
+            document.getElementById('videoDuration').value = 30;
+            updateDurationDisplay();
+        }
+
+        // Storyboard functions
+        async function loadStoryboard() {
+            try {
+                const response = await fetch(`${API_BASE}/script/list`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const data = await response.json();
+                const scriptIds = data.scriptIds || [];
+
+                if (scriptIds.length === 0) {
+                    showEmptyStoryboard();
+                    return;
+                }
+
+                // Load latest script
+                const scriptResponse = await fetch(`${API_BASE}/script/${scriptIds[0]}`);
+                if (scriptResponse.ok) {
+                    currentScript = await scriptResponse.json();
+                    scenes = currentScript.scenes || [];
+                    renderStoryboard();
+                }
+            } catch (error) {
+                showEmptyStoryboard('Lỗi: ' + error.message);
+            }
+        }
+
+        function renderStoryboard() {
+            const container = document.getElementById('sceneList');
+            const title = document.getElementById('storyboardTitle');
+
+            if (!currentScript || scenes.length === 0) {
+                showEmptyStoryboard();
+                return;
+            }
+
+            title.textContent = `Storyboard (${scenes.length} phân cảnh)`;
+
+            container.innerHTML = scenes.map((scene, index) => `
+                <div class="scene-card">
+                    <div>
+                        <div class="scene-header">
+                            <div class="scene-title">Phân cảnh ${scene.sceneNumber}</div>
+                            <div class="scene-badge">${index + 1}/${scenes.length}</div>
+                        </div>
+
+                        <div class="prompt-display">${scene.veoPrompt || scene.description}</div>
+
+                        <div class="scene-actions">
+                            <button class="action-btn btn-generate" onclick="generateVideo(${scene.sceneNumber})">
+                                📹 Tạo Video
+                            </button>
+                            <button class="action-btn btn-download" onclick="downloadVideo(${scene.sceneNumber})" ${!scene.videoFilePath ? 'disabled' : ''}>
+                                ⬇️ Download
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="video-preview">
+                            ${scene.videoFilePath ?
+                                `<video controls src="${scene.videoFilePath}"></video>` :
+                                `<div class="video-placeholder">Chưa có video</div>`
+                            }
+                        </div>
+                        <div class="video-status ${getStatusClass(scene.status)}">
+                            ${getStatusText(scene.status)}
+                        </div>
+                        ${scene.status === 'processing' ? `
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" style="width: ${scene.progress || 0}%"></div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getStatusClass(status) {
+            if (status === 'completed') return 'status-success';
+            if (status === 'failed') return 'status-error';
+            return 'status-indicator';
+        }
+
+        function getStatusText(status) {
+            if (status === 'completed') return '✅ Hoàn thành';
+            if (status === 'processing') return '⏳ Đang tạo...';
+            if (status === 'failed') return '❌ Thất bại';
+            return '⏸️ Chờ tạo';
+        }
+
+        async function generateVideo(sceneNumber) {
+            if (!currentScript) return;
+
+            try {
+                const response = await fetch(`${API_BASE}/veo/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        scriptId: currentScript.scriptId,
+                        sceneNumber: sceneNumber
+                    })
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const result = await response.json();
+                monitorVideoProgress(result.jobId, sceneNumber);
+            } catch (error) {
+                alert('Lỗi: ' + error.message);
+            }
+        }
+
+        async function monitorVideoProgress(jobId, sceneNumber) {
+            const checkInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/veo/job/${jobId}`);
+                    if (!response.ok) {
+                        clearInterval(checkInterval);
+                        return;
+                    }
+
+                    const job = await response.json();
+                    const scene = scenes.find(s => s.sceneNumber === sceneNumber);
+                    if (scene) {
+                        scene.status = job.status;
+                        scene.progress = job.progress;
+                        scene.videoFilePath = job.videoFilePath;
+                        renderStoryboard();
+                    }
+
+                    if (job.status === 'completed' || job.status === 'failed') {
+                        clearInterval(checkInterval);
+                    }
+                } catch (error) {
+                    console.error('Monitor error:', error);
+                }
+            }, 5000);
+        }
+
+        function downloadVideo(sceneNumber) {
+            const scene = scenes.find(s => s.sceneNumber === sceneNumber);
+            if (scene && scene.videoFilePath) {
+                window.open(scene.videoFilePath, '_blank');
+            }
+        }
+
+        function generateAllVideos() {
+            if (confirm(`Tạo video cho tất cả ${scenes.length} phân cảnh?`)) {
+                scenes.forEach((scene, index) => {
+                    if (scene.status !== 'completed') {
+                        setTimeout(() => generateVideo(scene.sceneNumber), index * 1000);
+                    }
+                });
+            }
+        }
+
+        function downloadAllVideos() {
+            scenes.forEach(scene => {
+                if (scene.videoFilePath) {
+                    setTimeout(() => downloadVideo(scene.sceneNumber), 500);
+                }
+            });
+        }
+
+        function showEmptyStoryboard(message = 'Chưa có script nào') {
+            const container = document.getElementById('sceneList');
+            const title = document.getElementById('storyboardTitle');
+            title.textContent = 'Storyboard (0 phân cảnh)';
+            container.innerHTML = `
+                <div class="empty-state">
+                    <h3>${message}</h3>
+                    <p style="margin-top: 10px; color: #6b7280;">Tạo script mới từ tab "Tạo Prompt"</p>
+                </div>
+            `;
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            updateDurationDisplay();
+        });
+    </script>
+</body>
+</html>
